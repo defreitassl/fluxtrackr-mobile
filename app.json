@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "FluxTrackr",
+    "slug": "fluxtrackr",
+    "scheme": "fluxtrackr",
+    "orientation": "portrait",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "userInterfaceStyle": "light"
+  }
+}
