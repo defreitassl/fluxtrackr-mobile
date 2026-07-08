@@ -53,9 +53,27 @@ export function login(email: string, password: string) {
 }
 
 export function getMonthlySummary(token: string) {
-  return request<MonthlySummary>('/monthly-summary?year=2026&month=7', {
+  const now = new Date();
+
+  return getMonthlySummaryByMonth(
+    token,
+    now.getFullYear(),
+    now.getMonth() + 1,
+  );
+}
+
+export function getMonthlySummaryByMonth(
+  token: string,
+  year: number,
+  month: number,
+) {
+  return request<MonthlySummary>(`/monthly-summary?year=${year}&month=${month}`, {
     token,
   });
+}
+
+export function getHealth() {
+  return request<{ database: string; status: string }>('/health');
 }
 
 export function getTransactions(token: string) {

@@ -2,8 +2,8 @@ export type Screen =
   | 'dashboard'
   | 'transactions'
   | 'categories'
-  | 'fixedExpenses'
-  | 'fixedIncomes';
+  | 'planning'
+  | 'profile';
 
 export type ScreenOption = {
   key: Screen;

@@ -1,13 +1,20 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView } from 'react-native';
+import { ActivityIndicator, SafeAreaView, StatusBar } from 'react-native';
+import { useFonts } from 'expo-font';
+import {
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import { JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 
 import { AppHeader } from './src/components/AppHeader';
-import { ScreenTabs } from './src/components/ScreenTabs';
+import { BottomNavigation } from './src/components/BottomNavigation';
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { CategoriesScreen } from './src/screens/CategoriesScreen';
-import { FixedExpensesScreen } from './src/screens/FixedExpensesScreen';
-import { FixedIncomesScreen } from './src/screens/FixedIncomesScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { PlanningScreen } from './src/screens/PlanningScreen';
+import { ProfileScreen } from './src/screens/ProfileScreen';
 import { TransactionsScreen } from './src/screens/TransactionsScreen';
 import {
   clearStoredToken,
@@ -15,13 +22,22 @@ import {
   storeToken,
 } from './src/storage/tokenStorage';
 import { styles } from './src/styles/styles';
+import { colors } from './src/styles/theme';
 import { Screen } from './src/types/navigation';
+import { decodeAccessToken } from './src/utils/jwt';
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    JetBrainsMono_500Medium,
+  });
   const [token, setToken] = useState<string | null>(null);
   const [isBooting, setIsBooting] = useState(true);
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [financialVersion, setFinancialVersion] = useState(0);
+  const userEmail = token ? decodeAccessToken(token)?.email : undefined;
 
   useEffect(() => {
     getStoredToken()
@@ -44,10 +60,11 @@ export default function App() {
     setFinancialVersion((current) => current + 1);
   }
 
-  if (isBooting) {
+  if (isBooting || !fontsLoaded) {
     return (
       <SafeAreaView style={styles.centered}>
-        <ActivityIndicator />
+        <StatusBar backgroundColor={colors.background} barStyle="light-content" />
+        <ActivityIndicator color={colors.primary} />
       </SafeAreaView>
     );
   }
@@ -57,12 +74,16 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <AppHeader onLogout={handleLogout} />
-      <ScreenTabs currentScreen={screen} onChange={setScreen} />
+    <SafeAreaView style={styles.appContainer}>
+      <StatusBar backgroundColor={colors.background} barStyle="light-content" />
+      <AppHeader currentScreen={screen} userEmail={userEmail} />
 
       {screen === 'dashboard' ? (
-        <DashboardScreen refreshKey={financialVersion} token={token} />
+        <DashboardScreen
+          onNavigate={setScreen}
+          refreshKey={financialVersion}
+          token={token}
+        />
       ) : null}
       {screen === 'transactions' ? (
         <TransactionsScreen
@@ -73,15 +94,20 @@ export default function App() {
       {screen === 'categories' ? (
         <CategoriesScreen onChanged={handleFinancialDataChanged} token={token} />
       ) : null}
-      {screen === 'fixedExpenses' ? (
-        <FixedExpensesScreen
+      {screen === 'planning' ? (
+        <PlanningScreen
           onChanged={handleFinancialDataChanged}
           token={token}
         />
       ) : null}
-      {screen === 'fixedIncomes' ? (
-        <FixedIncomesScreen onChanged={handleFinancialDataChanged} token={token} />
+      {screen === 'profile' ? (
+        <ProfileScreen
+          onLogout={handleLogout}
+          token={token}
+          userEmail={userEmail}
+        />
       ) : null}
+      <BottomNavigation currentScreen={screen} onChange={setScreen} />
     </SafeAreaView>
   );
 }

@@ -6,8 +6,12 @@ App mobile do FluxTrackr em Expo + React Native.
 
 - Login usando `POST /auth/login`.
 - Persistencia local do JWT com `expo-secure-store`.
-- Dashboard usando `GET /monthly-summary?year=2026&month=7`.
-- CRUD de transacoes, categorias, gastos fixos e ganhos fixos.
+- Dashboard mensal com saldo, orcamento diario, resumo financeiro e ultimas transacoes.
+- CRUD de transacoes com filtros, busca e formulario em modal.
+- CRUD de categorias.
+- Planejamento de gastos fixos e ganhos fixos em uma tela com abas.
+- Perfil com status da API, informacoes do bot Telegram e logout.
+- Identidade visual dark inspirada nos arquivos de referencia em `FluxTrackrScreensStitch/`.
 
 ## Estrutura do codigo
 
@@ -20,7 +24,7 @@ src/components/     Componentes reutilizaveis entre telas.
 src/constants/      Constantes de navegacao e configuracao local.
 src/screens/        Telas funcionais do app.
 src/storage/        Persistencia local do token.
-src/styles/         Estilos compartilhados atuais.
+src/styles/         Tokens visuais e estilos compartilhados.
 src/types/          Tipos dos contratos e da navegacao.
 src/utils/          Formatadores, validadores e helpers.
 ```
