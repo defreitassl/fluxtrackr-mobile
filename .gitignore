@@ -2,6 +2,7 @@ node_modules/
 dist/
 build/
 .expo/
+FluxTrackrScreensStitch/
 .env
 .env.*
 !.env.example

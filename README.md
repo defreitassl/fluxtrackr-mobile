@@ -9,6 +9,22 @@ App mobile do FluxTrackr em Expo + React Native.
 - Dashboard usando `GET /monthly-summary?year=2026&month=7`.
 - CRUD de transacoes, categorias, gastos fixos e ganhos fixos.
 
+## Estrutura do codigo
+
+O app segue uma estrutura simples por responsabilidade:
+
+```text
+App.tsx              Orquestracao de boot, sessao e tela ativa.
+src/api/            Cliente HTTP da API.
+src/components/     Componentes reutilizaveis entre telas.
+src/constants/      Constantes de navegacao e configuracao local.
+src/screens/        Telas funcionais do app.
+src/storage/        Persistencia local do token.
+src/styles/         Estilos compartilhados atuais.
+src/types/          Tipos dos contratos e da navegacao.
+src/utils/          Formatadores, validadores e helpers.
+```
+
 ## Ambiente suportado no MVP
 
 - Expo SDK: 54.
