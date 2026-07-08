@@ -23,10 +23,14 @@ export function AppHeader({
             <Icon color={colors.primary} name="person" size={22} />
           </View>
         ) : null}
-        <View>
-          <Text style={styles.title}>FluxTrackr</Text>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text numberOfLines={1} style={styles.title}>
+            FluxTrackr
+          </Text>
           {userEmail && currentScreen === 'dashboard' ? (
-            <Text style={styles.muted}>{userEmail}</Text>
+            <Text numberOfLines={1} style={styles.muted}>
+              {userEmail}
+            </Text>
           ) : null}
         </View>
       </View>

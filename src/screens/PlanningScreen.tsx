@@ -192,7 +192,7 @@ export function PlanningScreen({
           </AppText>
         </Card>
 
-        <View style={styles.sectionHeader}>
+        <View style={[styles.sectionHeader, styles.sectionHeaderStacked]}>
           <AppText size="title" weight="bold">
             {activeTab === 'expenses'
               ? 'Despesas Recorrentes'
@@ -285,44 +285,51 @@ function RecurringRow({
 
   return (
     <Card>
-      <View style={styles.row}>
-        <View style={styles.transactionIcon}>
-          <Icon
-            color={colors.muted}
-            name={getCategoryIcon(item.name, isExpense ? 'expense' : 'income')}
-          />
+      <View style={{ gap: 14 }}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.listItemContent}>
+            <View style={styles.transactionIcon}>
+              <Icon
+                color={colors.muted}
+                name={getCategoryIcon(item.name, isExpense ? 'expense' : 'income')}
+              />
+            </View>
+            <Pressable onPress={onEdit} style={styles.listText}>
+              <AppText numberOfLines={1} size="large" weight="bold">
+                {item.name}
+              </AppText>
+              <AppText mono muted numberOfLines={1} size="caption">
+                {isExpense ? 'Vence' : 'Recebe'}{' '}
+                {day ? `dia ${day}` : 'sem dia fixo'}
+              </AppText>
+            </Pressable>
+          </View>
+          <Toggle isActive={item.isActive} onToggle={onToggle} />
         </View>
-        <Pressable onPress={onEdit} style={styles.listText}>
-          <AppText size="large" weight="bold">
-            {item.name}
-          </AppText>
-          <AppText mono muted size="caption">
-            {isExpense ? 'Vence' : 'Recebe'} {day ? `dia ${day}` : 'sem dia fixo'}
-          </AppText>
-        </Pressable>
-        <View style={{ alignItems: 'flex-end', gap: 10 }}>
+
+        <View style={styles.sectionHeader}>
           <AppText
+            numberOfLines={1}
             style={isExpense ? styles.valueDanger : styles.valuePrimary}
             weight="bold"
           >
             {isExpense ? '-' : '+'} {formatMoney(Number(item.amount))}
           </AppText>
-          <View style={styles.row}>
+          <View style={styles.itemActions}>
             <IconButton
               color={colors.muted}
               name="create-outline"
               onPress={onEdit}
-              size={17}
-              style={{ height: 30, width: 30 }}
+              size={18}
+              style={{ height: 34, width: 34 }}
             />
             <IconButton
               color={colors.danger}
               name="trash-outline"
               onPress={onDelete}
-              size={17}
-              style={{ height: 30, width: 30 }}
+              size={18}
+              style={{ height: 34, width: 34 }}
             />
-            <Toggle isActive={item.isActive} onToggle={onToggle} />
           </View>
         </View>
       </View>
@@ -428,7 +435,7 @@ function RecurringFormModal({
             <IconButton name="close" onPress={onClose} />
           </View>
 
-          <View style={{ gap: 22, paddingTop: 22 }}>
+          <View style={styles.formSection}>
             <FormField
               icon={isExpense ? 'calendar-outline' : 'cash-outline'}
               label="Nome"

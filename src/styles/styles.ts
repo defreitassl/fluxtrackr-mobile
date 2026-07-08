@@ -36,11 +36,11 @@ export const styles = StyleSheet.create({
     borderTopWidth: 1,
     bottom: 0,
     flexDirection: 'row',
-    height: 70,
-    justifyContent: 'space-around',
+    height: 76,
+    justifyContent: 'space-between',
     left: 0,
-    paddingBottom: spacing.xs,
-    paddingHorizontal: spacing.xs,
+    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.sm,
     position: 'absolute',
     right: 0,
     ...shadows.panel,
@@ -48,22 +48,25 @@ export const styles = StyleSheet.create({
   bottomNavItem: {
     alignItems: 'center',
     borderRadius: radius.pill,
+    flex: 1,
     gap: 2,
     justifyContent: 'center',
-    minHeight: 52,
-    minWidth: 62,
-    paddingHorizontal: spacing.sm,
+    marginHorizontal: 2,
+    minHeight: 54,
+    minWidth: 0,
+    paddingHorizontal: spacing.xs,
     paddingVertical: spacing.xs,
   },
   bottomNavItemActive: {
     backgroundColor: colors.primaryDim,
-    minWidth: 88,
   },
   bottomNavLabel: {
     color: colors.muted,
     fontFamily: fonts.mono,
-    fontSize: 10,
+    fontSize: 10.5,
     lineHeight: 14,
+    maxWidth: 58,
+    textAlign: 'center',
   },
   bottomNavLabelActive: {
     color: colors.onPrimary,
@@ -97,6 +100,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.xs,
     minHeight: 38,
+    maxWidth: 180,
     paddingHorizontal: spacing.md,
   },
   chipActive: {
@@ -115,6 +119,7 @@ export const styles = StyleSheet.create({
     color: colors.muted,
     fontFamily: fonts.mono,
     fontSize: 12,
+    flexShrink: 1,
   },
   compactCardGrid: {
     flexDirection: 'row',
@@ -142,7 +147,8 @@ export const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     fontSize: 12,
     letterSpacing: 1.2,
-    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+    marginTop: spacing.lg,
     textTransform: 'uppercase',
   },
   disabledButton: {
@@ -168,18 +174,23 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.lg,
-    bottom: 86,
-    height: 58,
+    bottom: 94,
+    height: 56,
     justifyContent: 'center',
     position: 'absolute',
     right: spacing.lg,
-    width: 58,
+    width: 56,
     zIndex: 20,
     ...shadows.glow,
   },
   fieldRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  formSection: {
+    gap: 20,
+    paddingTop: 20,
+    paddingBottom: spacing.lg,
   },
   form: {
     flex: 1,
@@ -190,7 +201,7 @@ export const styles = StyleSheet.create({
   formLabel: {
     color: colors.muted,
     fontFamily: fonts.mono,
-    fontSize: 12,
+    fontSize: 12.5,
     letterSpacing: 0.8,
   },
   ghostButton: {
@@ -224,6 +235,12 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 42,
   },
+  inlineRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minWidth: 0,
+  },
   inlineAction: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
@@ -255,6 +272,7 @@ export const styles = StyleSheet.create({
   itemActions: {
     flexDirection: 'row',
     gap: spacing.xs,
+    flexShrink: 0,
   },
   itemTitle: {
     color: colors.text,
@@ -267,19 +285,34 @@ export const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   listItem: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     backgroundColor: colors.cardElevated,
     borderColor: colors.border,
     borderRadius: radius.md,
     borderWidth: 1,
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     justifyContent: 'space-between',
-    padding: spacing.md,
+    minWidth: 0,
+    padding: 14,
+  },
+  listItemContent: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    minWidth: 0,
   },
   listText: {
     flex: 1,
     gap: spacing.xs,
+    minWidth: 0,
+  },
+  listValueColumn: {
+    alignItems: 'flex-end',
+    flexShrink: 0,
+    gap: spacing.sm,
+    maxWidth: 136,
+    minWidth: 96,
   },
   loginCard: {
     gap: spacing.xl,
@@ -324,8 +357,15 @@ export const styles = StyleSheet.create({
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     borderTopWidth: 1,
-    maxHeight: '92%',
-    padding: spacing.lg,
+    maxHeight: '94%',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  modalScrollContent: {
+    gap: 20,
+    paddingTop: 20,
+    paddingBottom: spacing.lg,
   },
   monthSelector: {
     alignItems: 'center',
@@ -341,6 +381,7 @@ export const styles = StyleSheet.create({
   muted: {
     color: colors.muted,
     fontFamily: fonts.body,
+    flexShrink: 1,
   },
   page: {
     flex: 1,
@@ -356,6 +397,7 @@ export const styles = StyleSheet.create({
     gap: spacing.sm,
     justifyContent: 'center',
     minHeight: 52,
+    minWidth: 0,
     paddingHorizontal: spacing.lg,
     ...shadows.glow,
   },
@@ -364,6 +406,8 @@ export const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     fontSize: 14,
     letterSpacing: 1,
+    textAlign: 'center',
+    flexShrink: 1,
     textTransform: 'uppercase',
   },
   progressBar: {
@@ -381,14 +425,22 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
+    minWidth: 0,
+  },
+  rowWrap: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    minWidth: 0,
   },
   screen: {
     flex: 1,
   },
   scrollContent: {
-    gap: spacing.lg,
+    gap: 20,
     padding: spacing.md,
-    paddingBottom: 104,
+    paddingBottom: 116,
   },
   searchShell: {
     alignItems: 'center',
@@ -404,13 +456,20 @@ export const styles = StyleSheet.create({
   sectionHeader: {
     alignItems: 'center',
     flexDirection: 'row',
+    gap: spacing.md,
     justifyContent: 'space-between',
+    minWidth: 0,
+  },
+  sectionHeaderStacked: {
+    alignItems: 'flex-start',
+    flexDirection: 'column',
+    gap: spacing.sm,
   },
   sectionSubtitle: {
     color: colors.muted,
     fontFamily: fonts.body,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 15.5,
+    lineHeight: 23,
   },
   sectionTitle: {
     color: colors.text,
@@ -434,7 +493,9 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.xs,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: 46,
+    minWidth: 0,
+    paddingHorizontal: spacing.xs,
   },
   segmentedItemActive: {
     backgroundColor: colors.cardHigh,
@@ -445,13 +506,16 @@ export const styles = StyleSheet.create({
   segmentedText: {
     color: colors.muted,
     fontFamily: fonts.mono,
-    fontSize: 14,
+    fontSize: 13,
+    flexShrink: 1,
+    textAlign: 'center',
   },
   statCard: {
-    flexBasis: '47%',
+    flexBasis: '46%',
     flexGrow: 1,
     gap: spacing.sm,
-    minHeight: 82,
+    minHeight: 92,
+    minWidth: 142,
   },
   tab: {
     alignItems: 'center',
@@ -471,18 +535,18 @@ export const styles = StyleSheet.create({
   },
   text_body: {
     fontSize: 16,
-    lineHeight: 23,
+    lineHeight: 24,
   },
   text_bold: {
     fontFamily: fonts.bold,
   },
   text_caption: {
     fontSize: 12,
-    lineHeight: 16,
+    lineHeight: 17,
   },
   text_display: {
-    fontSize: 34,
-    lineHeight: 42,
+    fontSize: 32,
+    lineHeight: 40,
   },
   text_large: {
     fontSize: 18,
@@ -501,13 +565,13 @@ export const styles = StyleSheet.create({
     fontFamily: fonts.semibold,
   },
   text_title: {
-    fontSize: 22,
+    fontSize: 21,
     lineHeight: 28,
   },
   title: {
     color: colors.primary,
     fontFamily: fonts.bold,
-    fontSize: 34,
+    fontSize: 32,
     lineHeight: 40,
   },
   toggleThumb: {
@@ -542,16 +606,26 @@ export const styles = StyleSheet.create({
   },
   topBrand: {
     alignItems: 'center',
+    flex: 1,
     flexDirection: 'row',
     gap: spacing.sm,
+    minWidth: 0,
   },
   transactionIcon: {
     alignItems: 'center',
     backgroundColor: colors.cardHigh,
     borderRadius: radius.pill,
-    height: 50,
+    flexShrink: 0,
+    height: 48,
     justifyContent: 'center',
-    width: 50,
+    width: 48,
+  },
+  transactionMetaRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    minWidth: 0,
   },
   watermark: {
     bottom: -28,

@@ -166,26 +166,28 @@ function CategoryRow({
 
   return (
     <Card style={{ padding: 18 }}>
-      <View style={styles.row}>
-        <View style={[styles.transactionIcon, { backgroundColor: background }]}>
-          <Icon color={tone} name={getCategoryIcon(category.name, category.type)} />
-        </View>
-        <View style={styles.listText}>
-          <AppText size="large" weight="bold">
-            {category.name}
-          </AppText>
-          <View style={styles.row}>
-            <View
-              style={{
-                backgroundColor: tone,
-                borderRadius: 99,
-                height: 8,
-                width: 8,
-              }}
-            />
-            <AppText mono muted size="caption">
-              {categoryTypeLabel(category.type)}
+      <View style={styles.sectionHeader}>
+        <View style={styles.listItemContent}>
+          <View style={[styles.transactionIcon, { backgroundColor: background }]}>
+            <Icon color={tone} name={getCategoryIcon(category.name, category.type)} />
+          </View>
+          <View style={styles.listText}>
+            <AppText numberOfLines={1} size="large" weight="bold">
+              {category.name}
             </AppText>
+            <View style={styles.row}>
+              <View
+                style={{
+                  backgroundColor: tone,
+                  borderRadius: 99,
+                  height: 8,
+                  width: 8,
+                }}
+              />
+              <AppText mono muted numberOfLines={1} size="caption">
+                {categoryTypeLabel(category.type)}
+              </AppText>
+            </View>
           </View>
         </View>
         <View style={styles.itemActions}>
@@ -264,7 +266,7 @@ function CategoryFormModal({
             <IconButton name="close" onPress={onClose} />
           </View>
 
-          <View style={{ gap: 22, paddingTop: 22 }}>
+          <View style={styles.formSection}>
             <FormField
               icon="pricetag-outline"
               label="Nome"
@@ -301,6 +303,7 @@ function CategoryFormModal({
                   >
                     <Icon color={isActive ? color : colors.muted} name={option.icon} />
                     <Text
+                      numberOfLines={1}
                       style={[
                         styles.segmentedText,
                         isActive && { color },

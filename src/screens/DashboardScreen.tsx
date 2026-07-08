@@ -81,7 +81,7 @@ export function DashboardScreen({
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.sectionHeader}>
+        <View style={[styles.sectionHeader, styles.sectionHeaderStacked]}>
           <AppText size="title" weight="bold">
             Visão Geral
           </AppText>
@@ -93,7 +93,7 @@ export function DashboardScreen({
               size={18}
               style={{ height: 32, width: 32 }}
             />
-            <AppText mono size="caption">
+            <AppText mono numberOfLines={1} size="caption">
               {formatMonthYear(year, month)}
             </AppText>
             <IconButton
@@ -146,7 +146,7 @@ export function DashboardScreen({
           </View>
         </Card>
 
-        <Card style={{ gap: 12, minHeight: 150 }}>
+        <Card style={{ gap: 12, minHeight: 136 }}>
           <View style={styles.row}>
             <Icon color={colors.tertiary} name="bulb-outline" size={22} />
             <AppText muted>Orçamento Diário</AppText>
@@ -222,8 +222,8 @@ export function DashboardScreen({
                     <AppText numberOfLines={1} weight="semibold">
                       {transaction.description}
                     </AppText>
-                    <View style={styles.row}>
-                      <AppText mono muted size="caption">
+                    <View style={styles.transactionMetaRow}>
+                      <AppText mono muted numberOfLines={1} size="caption">
                         {category?.name ?? 'Sem categoria'}
                       </AppText>
                       <Chip
@@ -232,8 +232,9 @@ export function DashboardScreen({
                       />
                     </View>
                   </View>
-                  <View style={{ alignItems: 'flex-end' }}>
+                  <View style={styles.listValueColumn}>
                     <AppText
+                      numberOfLines={1}
                       style={
                         transaction.type === 'income'
                           ? styles.valuePrimary
@@ -244,7 +245,7 @@ export function DashboardScreen({
                       {transaction.type === 'income' ? '+' : '-'}{' '}
                       {formatMoney(Number(transaction.amount))}
                     </AppText>
-                    <AppText mono muted size="caption">
+                    <AppText mono muted numberOfLines={1} size="caption">
                       {formatShortDateTime(transaction.occurredAt)}
                     </AppText>
                   </View>
@@ -284,11 +285,11 @@ function SummaryTile({
     <Card style={styles.statCard}>
       <View style={styles.row}>
         <Icon color={color} name={icon} size={16} />
-        <AppText mono muted size="caption">
+        <AppText mono muted numberOfLines={1} size="caption">
           {label}
         </AppText>
       </View>
-      <AppText style={{ color }} weight="bold">
+      <AppText numberOfLines={1} style={{ color }} weight="bold">
         {formatMoney(value)}
       </AppText>
     </Card>

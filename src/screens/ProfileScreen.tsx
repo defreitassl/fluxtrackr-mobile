@@ -53,7 +53,9 @@ export function ProfileScreen({
           <AppText size="title" weight="bold">
             FluxTrackr User
           </AppText>
-          <AppText muted>{userEmail ?? 'dev@fluxtrackr.local'}</AppText>
+          <AppText muted numberOfLines={1}>
+            {userEmail ?? 'dev@fluxtrackr.local'}
+          </AppText>
           <Pressable onPress={checkApiStatus} style={styles.chip}>
             <View
               style={{
@@ -96,7 +98,7 @@ export function ProfileScreen({
           </View>
 
           <View style={[styles.inputShell, { justifyContent: 'space-between' }]}>
-            <AppText mono muted size="caption">
+            <AppText mono muted numberOfLines={1} size="caption">
               @FluxTrackr_Bot
             </AppText>
             <Pressable
@@ -165,12 +167,12 @@ function SettingsRow({
 }) {
   return (
     <View style={[styles.listItem, { backgroundColor: colors.transparent, borderWidth: 0 }]}>
-      <View style={styles.row}>
+      <View style={[styles.row, { flex: 1 }]}>
         <Icon color={colors.muted} name={icon} />
-        <AppText>{label}</AppText>
+        <AppText numberOfLines={1}>{label}</AppText>
       </View>
       {value ? (
-        <AppText mono muted size="caption">
+        <AppText mono muted numberOfLines={1} size="caption">
           {value}
         </AppText>
       ) : (

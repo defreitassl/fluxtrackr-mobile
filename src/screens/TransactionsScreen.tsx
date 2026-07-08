@@ -285,44 +285,47 @@ function TransactionRow({
 
   return (
     <Pressable onPress={onEdit} style={styles.listItem}>
-      <View
-        style={[
-          styles.transactionIcon,
-          isIncome && {
-            backgroundColor: colors.primaryMuted,
-            borderColor: colors.primary,
-            borderWidth: 1,
-          },
-        ]}
-      >
-        <Icon
-          color={isIncome ? colors.primary : colors.muted}
-          name={getTransactionIcon(
-            transaction.description,
-            category?.name,
-            transaction.type,
-          )}
-          size={24}
-        />
-      </View>
-
-      <View style={styles.listText}>
-        <AppText numberOfLines={1} weight="semibold">
-          {transaction.description}
-        </AppText>
-        <View style={styles.row}>
-          <AppText mono muted size="caption">
-            {category?.name ?? 'Sem categoria'}
-          </AppText>
-          <Chip
-            label={transaction.source === 'telegram' ? 'Telegram' : 'App'}
-            tone={transaction.source === 'telegram' ? 'telegram' : 'neutral'}
+      <View style={styles.listItemContent}>
+        <View
+          style={[
+            styles.transactionIcon,
+            isIncome && {
+              backgroundColor: colors.primaryMuted,
+              borderColor: colors.primary,
+              borderWidth: 1,
+            },
+          ]}
+        >
+          <Icon
+            color={isIncome ? colors.primary : colors.muted}
+            name={getTransactionIcon(
+              transaction.description,
+              category?.name,
+              transaction.type,
+            )}
+            size={24}
           />
+        </View>
+
+        <View style={styles.listText}>
+          <AppText numberOfLines={1} weight="semibold">
+            {transaction.description}
+          </AppText>
+          <View style={styles.transactionMetaRow}>
+            <AppText mono muted numberOfLines={1} size="caption">
+              {category?.name ?? 'Sem categoria'}
+            </AppText>
+            <Chip
+              label={transaction.source === 'telegram' ? 'Telegram' : 'App'}
+              tone={transaction.source === 'telegram' ? 'telegram' : 'neutral'}
+            />
+          </View>
         </View>
       </View>
 
-      <View style={{ alignItems: 'flex-end', gap: 8 }}>
+      <View style={styles.listValueColumn}>
         <AppText
+          numberOfLines={1}
           style={isIncome ? styles.valuePrimary : styles.valueDanger}
           weight="bold"
         >
@@ -442,7 +445,7 @@ function TransactionFormModal({
           </View>
 
           <ScrollView
-            contentContainerStyle={{ gap: 22, paddingTop: 22 }}
+            contentContainerStyle={styles.modalScrollContent}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -491,7 +494,7 @@ function TransactionFormModal({
               </Pressable>
             </View>
 
-            <View style={{ alignItems: 'center', gap: 6 }}>
+            <View style={{ alignItems: 'center', gap: 8 }}>
               <AppText mono muted size="caption">
                 Valor
               </AppText>
@@ -516,7 +519,8 @@ function TransactionFormModal({
                     styles.text_display,
                     styles.text_bold,
                     {
-                      minWidth: 180,
+                      minWidth: 160,
+                      maxWidth: 240,
                       textAlign: 'center',
                     },
                     type === 'income' ? styles.valuePrimary : styles.valueDanger,

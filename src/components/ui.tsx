@@ -100,6 +100,7 @@ export function PrimaryButton({
         <>
           {icon ? <Icon color={contentColor} name={icon} size={19} /> : null}
           <Text
+            numberOfLines={1}
             style={[
               styles.primaryButtonText,
               isGhost && styles.ghostButtonText,
@@ -190,6 +191,7 @@ export function Chip({
         />
       ) : null}
       <Text
+        numberOfLines={1}
         style={[
           styles.chipText,
           (active || tone !== 'neutral') && { color: chipToneColor(tone) },
@@ -236,12 +238,16 @@ export function SectionHeader({
 }) {
   return (
     <View style={styles.sectionHeader}>
-      <AppText size="title" weight="bold">
-        {children}
-      </AppText>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <AppText size="title" weight="bold">
+          {children}
+        </AppText>
+      </View>
       {actionLabel && onAction ? (
         <Pressable onPress={onAction} style={styles.inlineAction}>
-          <Text style={styles.inlineActionText}>{actionLabel}</Text>
+          <Text numberOfLines={1} style={styles.inlineActionText}>
+            {actionLabel}
+          </Text>
         </Pressable>
       ) : null}
     </View>
