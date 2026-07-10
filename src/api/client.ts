@@ -1,5 +1,7 @@
 import {
+  Account,
   Category,
+  CreateAccountInput,
   CreateCategoryInput,
   CreateFixedExpenseInput,
   CreateFixedIncomeInput,
@@ -8,6 +10,7 @@ import {
   FixedIncome,
   MonthlySummary,
   Transaction,
+  UpdateAccountInput,
   UpdateCategoryInput,
   UpdateFixedExpenseInput,
   UpdateFixedIncomeInput,
@@ -78,6 +81,30 @@ export function getHealth() {
 
 export function getTransactions(token: string) {
   return request<Transaction[]>('/transactions', { token });
+}
+
+export function getAccounts(token: string) {
+  return request<Account[]>('/accounts', { token });
+}
+
+export function createAccount(token: string, input: CreateAccountInput) {
+  return request<Account>('/accounts', {
+    method: 'POST',
+    token,
+    body: input,
+  });
+}
+
+export function updateAccount(
+  token: string,
+  id: string,
+  input: UpdateAccountInput,
+) {
+  return request<Account>(`/accounts/${id}`, {
+    method: 'PATCH',
+    token,
+    body: input,
+  });
 }
 
 export function createTransaction(

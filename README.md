@@ -7,7 +7,8 @@ App mobile do FluxTrackr em Expo + React Native.
 - Login usando `POST /auth/login`.
 - Persistencia local do JWT com `expo-secure-store`.
 - Dashboard mensal com saldo, orcamento diario, resumo financeiro e ultimas transacoes.
-- CRUD de transacoes com filtros, busca e formulario em modal.
+- CRUD de transacoes com filtros, busca, conta financeira, metodo de pagamento e formulario em modal.
+- Criacao rapida de contas financeiras na tela de transacoes para testar `Nubank`, `Inter` e `Dinheiro`.
 - CRUD de categorias.
 - Planejamento de gastos fixos e ganhos fixos em uma tela com abas.
 - Perfil com status da API, informacoes do bot Telegram e logout.

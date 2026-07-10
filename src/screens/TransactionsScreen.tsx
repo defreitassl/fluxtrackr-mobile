@@ -12,8 +12,10 @@ import {
 } from 'react-native';
 
 import {
+  createAccount,
   createTransaction,
   deleteTransaction,
+  getAccounts,
   getCategories,
   getTransactions,
   updateTransaction,
@@ -30,7 +32,14 @@ import {
 } from '../components/ui';
 import { styles } from '../styles/styles';
 import { colors } from '../styles/theme';
-import { Category, Transaction, TransactionType } from '../types/api';
+import {
+  Account,
+  AccountType,
+  Category,
+  PaymentMethod,
+  Transaction,
+  TransactionType,
+} from '../types/api';
 import { formatMoney } from '../utils/currency';
 import {
   dateInputToIso,
@@ -40,8 +49,47 @@ import {
 import { getErrorMessage } from '../utils/errors';
 import { parseAmount } from '../utils/forms';
 import { getTransactionIcon } from '../utils/icons';
+import { accountTypeLabel, paymentMethodLabel } from '../utils/labels';
 
 type TypeFilter = 'all' | TransactionType;
+
+const paymentMethods: PaymentMethod[] = [
+  'pix',
+  'debit',
+  'credit',
+  'cash',
+  'transfer',
+];
+
+const quickAccounts: Array<{
+  bank: string | null;
+  color: string;
+  icon: string;
+  name: string;
+  type: AccountType;
+}> = [
+  {
+    bank: 'Nubank',
+    color: '#820AD1',
+    icon: 'bank',
+    name: 'Nubank',
+    type: 'checking',
+  },
+  {
+    bank: 'Inter',
+    color: '#ff7a00',
+    icon: 'bank',
+    name: 'Inter',
+    type: 'checking',
+  },
+  {
+    bank: null,
+    color: '#22c55e',
+    icon: 'wallet',
+    name: 'Dinheiro',
+    type: 'cash',
+  },
+];
 
 export function TransactionsScreen({
   onChanged,
@@ -52,6 +100,7 @@ export function TransactionsScreen({
 }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [filter, setFilter] = useState<TypeFilter>('all');
   const [query, setQuery] = useState('');
   const [editingTransaction, setEditingTransaction] =
@@ -63,12 +112,15 @@ export function TransactionsScreen({
     setIsLoading(true);
 
     try {
-      const [loadedTransactions, loadedCategories] = await Promise.all([
-        getTransactions(token),
-        getCategories(token),
-      ]);
+      const [loadedTransactions, loadedCategories, loadedAccounts] =
+        await Promise.all([
+          getTransactions(token),
+          getCategories(token),
+          getAccounts(token),
+        ]);
       setTransactions(loadedTransactions);
       setCategories(loadedCategories);
+      setAccounts(loadedAccounts);
     } catch (error) {
       Alert.alert('Erro ao carregar transações', getErrorMessage(error));
     } finally {
@@ -85,6 +137,11 @@ export function TransactionsScreen({
     [categories],
   );
 
+  const accountById = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account])),
+    [accounts],
+  );
+
   const filteredTransactions = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -99,7 +156,13 @@ export function TransactionsScreen({
           ? categoryById.get(transaction.categoryId)
           : undefined;
 
-        return `${transaction.description} ${category?.name ?? ''}`
+        const account = transaction.accountId
+          ? accountById.get(transaction.accountId)
+          : undefined;
+
+        return `${transaction.description} ${category?.name ?? ''} ${
+          account?.name ?? ''
+        } ${transaction.paymentMethod ?? ''}`
           .toLowerCase()
           .includes(normalizedQuery);
       })
@@ -108,7 +171,7 @@ export function TransactionsScreen({
           new Date(second.occurredAt).getTime() -
           new Date(first.occurredAt).getTime(),
       );
-  }, [categoryById, filter, query, transactions]);
+  }, [accountById, categoryById, filter, query, transactions]);
 
   function openCreateForm() {
     setEditingTransaction(null);
@@ -148,6 +211,25 @@ export function TransactionsScreen({
     setEditingTransaction(null);
     onChanged();
     await loadData();
+  }
+
+  async function handleCreateQuickAccount(
+    account: (typeof quickAccounts)[number],
+  ) {
+    try {
+      await createAccount(token, {
+        bank: account.bank,
+        color: account.color,
+        icon: account.icon,
+        initialBalance: 0,
+        isActive: true,
+        name: account.name,
+        type: account.type,
+      });
+      await loadData();
+    } catch (error) {
+      Alert.alert('Erro ao criar conta', getErrorMessage(error));
+    }
   }
 
   return (
@@ -191,11 +273,69 @@ export function TransactionsScreen({
           </View>
         </View>
 
+        <Card style={{ gap: 12 }}>
+          <View style={styles.sectionHeader}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <AppText size="large" weight="bold">
+                Contas
+              </AppText>
+              <AppText muted size="caption">
+                Crie contas rápidas para testar transações por origem.
+              </AppText>
+            </View>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.row}>
+              {accounts.map((account) => (
+                <Chip
+                  key={account.id}
+                  label={`${account.name} · ${accountTypeLabel(account.type)}`}
+                />
+              ))}
+              {accounts.length === 0 ? (
+                <Chip label="Nenhuma conta" />
+              ) : null}
+            </View>
+          </ScrollView>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.row}>
+              {quickAccounts.map((account) => {
+                const alreadyExists = accounts.some(
+                  (item) =>
+                    item.name.trim().toLowerCase() ===
+                    account.name.trim().toLowerCase(),
+                );
+
+                return (
+                  <Chip
+                    key={account.name}
+                    active={alreadyExists}
+                    label={
+                      alreadyExists
+                        ? `${account.name} criada`
+                        : `Criar ${account.name}`
+                    }
+                    onPress={
+                      alreadyExists
+                        ? undefined
+                        : () => handleCreateQuickAccount(account)
+                    }
+                    tone={alreadyExists ? 'primary' : 'neutral'}
+                  />
+                );
+              })}
+            </View>
+          </ScrollView>
+        </Card>
+
         {isLoading ? <ActivityIndicator color={colors.primary} /> : null}
 
         {filteredTransactions.length > 0 ? (
           <View style={{ gap: 10 }}>
             {renderGroupedTransactions({
+              accountById,
               categoryById,
               onDelete: handleDelete,
               onEdit: openEditForm,
@@ -216,6 +356,7 @@ export function TransactionsScreen({
       </Pressable>
 
       <TransactionFormModal
+        accounts={accounts}
         categories={categories}
         initialTransaction={editingTransaction}
         isVisible={isFormVisible}
@@ -228,11 +369,13 @@ export function TransactionsScreen({
 }
 
 function renderGroupedTransactions({
+  accountById,
   categoryById,
   onDelete,
   onEdit,
   transactions,
 }: {
+  accountById: Map<string, Account>;
   categoryById: Map<string, Category>;
   onDelete: (transaction: Transaction) => void;
   onEdit: (transaction: Transaction) => void;
@@ -245,6 +388,9 @@ function renderGroupedTransactions({
     const group = formatDateGroup(transaction.occurredAt);
     const category = transaction.categoryId
       ? categoryById.get(transaction.categoryId)
+      : undefined;
+    const account = transaction.accountId
+      ? accountById.get(transaction.accountId)
       : undefined;
 
     if (group !== currentGroup) {
@@ -259,6 +405,7 @@ function renderGroupedTransactions({
     nodes.push(
       <TransactionRow
         key={transaction.id}
+        account={account}
         category={category}
         transaction={transaction}
         onDelete={() => onDelete(transaction)}
@@ -271,11 +418,13 @@ function renderGroupedTransactions({
 }
 
 function TransactionRow({
+  account,
   category,
   onDelete,
   onEdit,
   transaction,
 }: {
+  account?: Account;
   category?: Category;
   onDelete: () => void;
   onEdit: () => void;
@@ -313,7 +462,15 @@ function TransactionRow({
           </AppText>
           <View style={styles.transactionMetaRow}>
             <AppText mono muted numberOfLines={1} size="caption">
-              {category?.name ?? 'Sem categoria'}
+              {[
+                category?.name ?? 'Sem categoria',
+                account?.name,
+                transaction.paymentMethod
+                  ? paymentMethodLabel(transaction.paymentMethod)
+                  : undefined,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </AppText>
             <Chip
               label={transaction.source === 'telegram' ? 'Telegram' : 'App'}
@@ -353,6 +510,7 @@ function TransactionRow({
 }
 
 function TransactionFormModal({
+  accounts,
   categories,
   initialTransaction,
   isVisible,
@@ -360,6 +518,7 @@ function TransactionFormModal({
   onSaved,
   token,
 }: {
+  accounts: Account[];
   categories: Category[];
   initialTransaction: Transaction | null;
   isVisible: boolean;
@@ -371,6 +530,10 @@ function TransactionFormModal({
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState<string | undefined>();
+  const [accountId, setAccountId] = useState<string | undefined>();
+  const [paymentMethod, setPaymentMethod] = useState<
+    PaymentMethod | undefined
+  >();
   const [date, setDate] = useState(toDateInputValue());
   const [isSaving, setIsSaving] = useState(false);
 
@@ -380,6 +543,8 @@ function TransactionFormModal({
       setAmount(String(initialTransaction.amount));
       setDescription(initialTransaction.description);
       setCategoryId(initialTransaction.categoryId ?? undefined);
+      setAccountId(initialTransaction.accountId ?? undefined);
+      setPaymentMethod(initialTransaction.paymentMethod ?? undefined);
       setDate(toDateInputValue(initialTransaction.occurredAt));
       return;
     }
@@ -388,6 +553,8 @@ function TransactionFormModal({
     setAmount('');
     setDescription('');
     setCategoryId(undefined);
+    setAccountId(undefined);
+    setPaymentMethod(undefined);
     setDate(toDateInputValue());
   }, [initialTransaction, isVisible]);
 
@@ -408,9 +575,11 @@ function TransactionFormModal({
     try {
       const payload = {
         amount: numericAmount,
+        accountId: accountId ?? null,
         categoryId: categoryId ?? null,
         description: description.trim(),
         occurredAt: dateInputToIso(date),
+        paymentMethod: paymentMethod ?? null,
         type,
       };
 
@@ -419,7 +588,9 @@ function TransactionFormModal({
       } else {
         await createTransaction(token, {
           ...payload,
+          accountId: accountId ?? undefined,
           categoryId: categoryId ?? undefined,
+          paymentMethod,
           source: 'app',
         });
       }
@@ -433,7 +604,12 @@ function TransactionFormModal({
   }
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={isVisible}>
+    <Modal
+      animationType="slide"
+      onRequestClose={onClose}
+      transparent
+      visible={isVisible}
+    >
       <View style={styles.modalBackdrop}>
         <View style={styles.modalPanel}>
           <View style={styles.modalHandle} />
@@ -561,6 +737,59 @@ function TransactionFormModal({
                       active={categoryId === category.id}
                       label={category.name}
                       onPress={() => setCategoryId(category.id)}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            <View style={{ gap: 10 }}>
+              <View style={styles.sectionHeader}>
+                <AppText mono muted size="caption">
+                  Conta
+                </AppText>
+                <AppText mono style={styles.valuePrimary} size="caption">
+                  {accounts.length} opções
+                </AppText>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.row}>
+                  <Chip
+                    active={!accountId}
+                    label="Sem conta"
+                    onPress={() => setAccountId(undefined)}
+                  />
+                  {accounts.map((account) => (
+                    <Chip
+                      key={account.id}
+                      active={accountId === account.id}
+                      label={account.name}
+                      onPress={() => setAccountId(account.id)}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            <View style={{ gap: 10 }}>
+              <View style={styles.sectionHeader}>
+                <AppText mono muted size="caption">
+                  Método de pagamento
+                </AppText>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.row}>
+                  <Chip
+                    active={!paymentMethod}
+                    label="Sem método"
+                    onPress={() => setPaymentMethod(undefined)}
+                  />
+                  {paymentMethods.map((method) => (
+                    <Chip
+                      key={method}
+                      active={paymentMethod === method}
+                      label={paymentMethodLabel(method)}
+                      onPress={() => setPaymentMethod(method)}
                     />
                   ))}
                 </View>
