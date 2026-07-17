@@ -15,6 +15,14 @@ import {
   UpdateFixedExpenseInput,
   UpdateFixedIncomeInput,
   UpdateTransactionInput,
+  Activity,
+  CategoryBudgetOverview,
+  DashboardOverview,
+  FinancialGoalsOverview,
+  Notification,
+  NotificationPreference,
+  PaginatedResponse,
+  SubscriptionSummary,
 } from '../types/api';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -24,6 +32,20 @@ type RequestOptions = {
   token?: string;
   body?: unknown;
 };
+
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) { super(message); }
+}
+
+let onUnauthorized: (() => void) | undefined;
+export function setUnauthorizedHandler(handler: (() => void) | undefined) { onUnauthorized = handler; }
+
+function query(params: Record<string, string | number | boolean | null | undefined>) {
+  const values = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => { if (value !== undefined && value !== null) values.set(key, String(value)); });
+  const serialized = values.toString();
+  return serialized ? `?${serialized}` : '';
+}
 
 async function request<T>(path: string, options: RequestOptions = {}) {
   const response = await fetch(`${API_URL}${path}`, {
@@ -42,7 +64,8 @@ async function request<T>(path: string, options: RequestOptions = {}) {
   if (!response.ok) {
     const message =
       data?.message ?? `Request failed with status ${response.status}`;
-    throw new Error(Array.isArray(message) ? message.join(', ') : message);
+    if (response.status === 401) onUnauthorized?.();
+    throw new ApiError(Array.isArray(message) ? message.join(', ') : message, response.status);
   }
 
   return data as T;
@@ -162,7 +185,7 @@ export function updateCategory(
 }
 
 export function deleteCategory(token: string, id: string) {
-  return request<{ deleted: true }>(`/categories/${id}`, {
+  return request<{ archived: true }>(`/categories/${id}`, {
     method: 'DELETE',
     token,
   });
@@ -232,3 +255,16 @@ export function deleteFixedIncome(token: string, id: string) {
     token,
   });
 }
+
+export function getDashboardOverview(token: string, asOf: Date) { return request<DashboardOverview>(`/dashboard-overview${query({ asOf: asOf.toISOString() })}`, { token }); }
+export function getSubscriptionsSummary(token: string, asOf: Date) { return request<SubscriptionSummary>(`/subscriptions/summary${query({ asOf: asOf.toISOString() })}`, { token }); }
+export function getCategoryBudgetsOverview(token: string, year: number, month: number, asOf: Date) { return request<CategoryBudgetOverview>(`/category-budgets/overview${query({ year, month, asOf: asOf.toISOString() })}`, { token }); }
+export function getFinancialGoalsOverview(token: string, asOf?: Date) { return request<FinancialGoalsOverview>(`/financial-goals/overview${query({ asOf: asOf?.toISOString() })}`, { token }); }
+export function getNotifications(token: string, params: { cursor?: string; limit?: number; isRead?: boolean; includeResolved?: boolean; includeDismissed?: boolean } = {}) { return request<PaginatedResponse<Notification>>(`/notifications${query(params)}`, { token }); }
+export function getUnreadNotificationCount(token: string) { return request<{ unreadCount: number }>('/notifications/unread-count', { token }); }
+export function markNotificationRead(token: string, id: string) { return request<Notification>(`/notifications/${id}/read`, { method: 'PATCH', token }); }
+export function markAllNotificationsRead(token: string) { return request<{ updatedCount: number }>('/notifications/read-all', { method: 'POST', token }); }
+export function dismissNotification(token: string, id: string) { return request<{ dismissed: true }>(`/notifications/${id}`, { method: 'DELETE', token }); }
+export function getNotificationPreferences(token: string) { return request<{ preferences: NotificationPreference[] }>('/notification-preferences', { token }); }
+export function updateNotificationPreferences(token: string, preferences: NotificationPreference[]) { return request<{ preferences: NotificationPreference[] }>('/notification-preferences', { method: 'PATCH', token, body: { preferences } }); }
+export function getActivities(token: string, params: { cursor?: string; limit?: number } = {}) { return request<PaginatedResponse<Activity>>(`/activities${query(params)}`, { token }); }

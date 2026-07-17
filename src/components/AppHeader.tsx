@@ -8,9 +8,13 @@ import { IconButton } from './ui';
 
 export function AppHeader({
   currentScreen,
+  onNotificationsPress,
+  unreadCount,
   userEmail,
 }: {
   currentScreen: Screen;
+  onNotificationsPress: () => void;
+  unreadCount: number;
   userEmail?: string;
 }) {
   const showAvatar = currentScreen !== 'profile';
@@ -34,11 +38,10 @@ export function AppHeader({
           ) : null}
         </View>
       </View>
-      <IconButton
-        color={colors.primary}
-        name="notifications-outline"
-        onPress={() => undefined}
-      />
+      <View>
+        <IconButton color={colors.primary} name="notifications-outline" onPress={onNotificationsPress} />
+        {unreadCount > 0 ? <View style={styles.notificationBadge}><Text style={styles.notificationBadgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text></View> : null}
+      </View>
     </View>
   );
 }

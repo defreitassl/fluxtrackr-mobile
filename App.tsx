@@ -15,6 +15,7 @@ import { CategoriesScreen } from './src/screens/CategoriesScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { PlanningScreen } from './src/screens/PlanningScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
+import { NotificationCenterScreen } from './src/screens/NotificationCenterScreen';
 import { TransactionsScreen } from './src/screens/TransactionsScreen';
 import {
   clearStoredToken,
@@ -25,6 +26,9 @@ import { styles } from './src/styles/styles';
 import { colors } from './src/styles/theme';
 import { Screen } from './src/types/navigation';
 import { decodeAccessToken } from './src/utils/jwt';
+import { getUnreadNotificationCount, setUnauthorizedHandler } from './src/api/client';
+
+type OverlayScreen = 'notification-center' | null;
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -37,6 +41,8 @@ export default function App() {
   const [isBooting, setIsBooting] = useState(true);
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [financialVersion, setFinancialVersion] = useState(0);
+  const [overlay, setOverlay] = useState<OverlayScreen>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const userEmail = token ? decodeAccessToken(token)?.email : undefined;
 
   useEffect(() => {
@@ -45,15 +51,30 @@ export default function App() {
       .finally(() => setIsBooting(false));
   }, []);
 
+  async function refreshUnreadCount(activeToken = token) {
+    if (!activeToken) return;
+    try { setUnreadCount((await getUnreadNotificationCount(activeToken)).unreadCount); }
+    catch { /* The requesting screen exposes API errors when relevant. */ }
+  }
+
+  useEffect(() => { if (token) refreshUnreadCount(token); }, [financialVersion, token]);
+  useEffect(() => {
+    setUnauthorizedHandler(() => { clearStoredToken().finally(() => { setOverlay(null); setToken(null); }); });
+    return () => setUnauthorizedHandler(undefined);
+  }, []);
+
   async function handleAuthenticated(accessToken: string) {
     await storeToken(accessToken);
     setToken(accessToken);
     setScreen('dashboard');
+    setOverlay(null);
+    await refreshUnreadCount(accessToken);
   }
 
   async function handleLogout() {
     await clearStoredToken();
     setToken(null);
+    setOverlay(null);
   }
 
   function handleFinancialDataChanged() {
@@ -76,7 +97,8 @@ export default function App() {
   return (
     <SafeAreaView style={styles.appContainer}>
       <StatusBar backgroundColor={colors.background} barStyle="light-content" />
-      <AppHeader currentScreen={screen} userEmail={userEmail} />
+      {overlay ? <NotificationCenterScreen token={token} onClose={async () => { setOverlay(null); await refreshUnreadCount(); }} onUnreadChanged={refreshUnreadCount} /> : <>
+      <AppHeader currentScreen={screen} userEmail={userEmail} unreadCount={unreadCount} onNotificationsPress={() => setOverlay('notification-center')} />
 
       {screen === 'dashboard' ? (
         <DashboardScreen
@@ -108,6 +130,7 @@ export default function App() {
         />
       ) : null}
       <BottomNavigation currentScreen={screen} onChange={setScreen} />
+      </>}
     </SafeAreaView>
   );
 }

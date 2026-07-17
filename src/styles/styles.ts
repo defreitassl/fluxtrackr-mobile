@@ -362,6 +362,19 @@ export const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
   },
+  notificationBadge: {
+    alignItems: 'center', backgroundColor: colors.danger, borderColor: colors.background,
+    borderRadius: radius.pill, borderWidth: 2, justifyContent: 'center', minHeight: 18,
+    minWidth: 18, paddingHorizontal: 3, position: 'absolute', right: -2, top: -2,
+  },
+  notificationBadgeText: { color: colors.backgroundDeep, fontFamily: fonts.bold, fontSize: 9 },
+  notificationDot: { borderRadius: radius.pill, height: 9, marginTop: 6, width: 9 },
+  notificationRow: { gap: spacing.sm },
+  notificationUnread: { borderColor: colors.primary },
+  preferenceRow: {
+    alignItems: 'center', borderBottomColor: colors.borderMuted, borderBottomWidth: 1,
+    flexDirection: 'row', gap: spacing.md, justifyContent: 'space-between', paddingVertical: spacing.sm,
+  },
   modalScrollContent: {
     gap: 20,
     paddingTop: 20,

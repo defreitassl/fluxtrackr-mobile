@@ -14,8 +14,11 @@ import {
   createFixedIncome,
   deleteFixedExpense,
   deleteFixedIncome,
+  getCategoryBudgetsOverview,
   getFixedExpenses,
   getFixedIncomes,
+  getFinancialGoalsOverview,
+  getSubscriptionsSummary,
   updateFixedExpense,
   updateFixedIncome,
 } from '../api/client';
@@ -31,13 +34,14 @@ import {
 } from '../components/ui';
 import { styles } from '../styles/styles';
 import { colors } from '../styles/theme';
-import { FixedExpense, FixedIncome } from '../types/api';
+import { CategoryBudgetOverview, FinancialGoalsOverview, FixedExpense, FixedIncome, SubscriptionSummary } from '../types/api';
 import { formatMoney } from '../utils/currency';
 import { getErrorMessage } from '../utils/errors';
 import { parseAmount, parseOptionalDay } from '../utils/forms';
 import { getCategoryIcon } from '../utils/icons';
 
 type PlanningTab = 'expenses' | 'incomes';
+type PlanningArea = 'overview' | 'recurrences';
 type RecurringItem = FixedExpense | FixedIncome;
 
 export function PlanningScreen({
@@ -48,11 +52,17 @@ export function PlanningScreen({
   token: string;
 }) {
   const [activeTab, setActiveTab] = useState<PlanningTab>('expenses');
+  const [area, setArea] = useState<PlanningArea>('overview');
   const [expenses, setExpenses] = useState<FixedExpense[]>([]);
   const [incomes, setIncomes] = useState<FixedIncome[]>([]);
   const [editingItem, setEditingItem] = useState<RecurringItem | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [overviewLoading, setOverviewLoading] = useState(false);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionSummary | null>(null);
+  const [budgets, setBudgets] = useState<CategoryBudgetOverview | null>(null);
+  const [goals, setGoals] = useState<FinancialGoalsOverview | null>(null);
 
   async function loadItems() {
     setIsLoading(true);
@@ -73,7 +83,22 @@ export function PlanningScreen({
 
   useEffect(() => {
     loadItems();
+    loadOverview();
   }, [token]);
+
+  async function loadOverview() {
+    const now = new Date();
+    setOverviewLoading(true); setOverviewError(null);
+    try {
+      const [loadedSubscriptions, loadedBudgets, loadedGoals] = await Promise.all([
+        getSubscriptionsSummary(token, now),
+        getCategoryBudgetsOverview(token, now.getUTCFullYear(), now.getUTCMonth() + 1, now),
+        getFinancialGoalsOverview(token, now),
+      ]);
+      setSubscriptions(loadedSubscriptions); setBudgets(loadedBudgets); setGoals(loadedGoals);
+    } catch (error) { setOverviewError(getErrorMessage(error)); }
+    finally { setOverviewLoading(false); }
+  }
 
   const items = activeTab === 'expenses' ? expenses : incomes;
   const total = useMemo(
@@ -153,6 +178,13 @@ export function PlanningScreen({
         </View>
 
         <View style={styles.segmentedControl}>
+          <PlanningTabButton active={area === 'overview'} label="Visão geral" onPress={() => setArea('overview')} />
+          <PlanningTabButton active={area === 'recurrences'} label="Recorrências" onPress={() => setArea('recurrences')} />
+        </View>
+
+        {area === 'overview' ? <PlanningOverview budgets={budgets} error={overviewError} goals={goals} isLoading={overviewLoading} onRetry={loadOverview} subscriptions={subscriptions} /> : <>
+
+        <View style={styles.segmentedControl}>
           <PlanningTabButton
             active={activeTab === 'expenses'}
             label="Gastos Fixos"
@@ -225,6 +257,7 @@ export function PlanningScreen({
             title="Nenhuma recorrência"
           />
         )}
+        </>}
       </ScrollView>
 
       <RecurringFormModal
@@ -237,6 +270,16 @@ export function PlanningScreen({
       />
     </View>
   );
+}
+
+function PlanningOverview({ budgets, error, goals, isLoading, onRetry, subscriptions }: { budgets: CategoryBudgetOverview | null; error: string | null; goals: FinancialGoalsOverview | null; isLoading: boolean; onRetry: () => void; subscriptions: SubscriptionSummary | null }) {
+  if (isLoading && !subscriptions) return <ActivityIndicator color={colors.primary} />;
+  if (error && !subscriptions) return <><EmptyState icon="cloud-offline-outline" title="Visão indisponível" message={error} /><PrimaryButton label="Tentar novamente" onPress={onRetry} /></>;
+  return <View style={{ gap: 12 }}>
+    <Card><AppText size="title" weight="bold">Assinaturas</AppText><AppText>Ativas: {subscriptions?.activeSubscriptions ?? 0}</AppText><AppText>Equivalente mensal: {formatMoney(Number(subscriptions?.monthlyEquivalent ?? 0))}</AppText><AppText>Pendente no mês: {formatMoney(Number(subscriptions?.pendingThisMonth ?? 0))}</AppText>{subscriptions?.nextCharge ? <AppText mono muted size="caption">Próxima: {subscriptions.nextCharge.name} em {new Date(subscriptions.nextCharge.chargeDate).toLocaleDateString('pt-BR')}</AppText> : null}</Card>
+    <Card><AppText size="title" weight="bold">Orçamentos</AppText><AppText>Limite: {formatMoney(Number(budgets?.summary.totalLimit ?? 0))}</AppText><AppText>Gasto: {formatMoney(Number(budgets?.summary.totalSpent ?? 0))}</AppText><AppText>Restante: {formatMoney(Number(budgets?.summary.totalRemaining ?? 0))}</AppText><AppText mono muted size="caption">{budgets?.summary.withinBudgetCount ?? 0} dentro · {budgets?.summary.nearLimitCount ?? 0} próximos · {budgets?.summary.exceededCount ?? 0} excedidos</AppText>{budgets?.budgets.slice(0, 4).map((budget) => <AppText key={budget.id} muted size="caption">{budget.category.name}: {formatMoney(Number(budget.spentAmount))} / {formatMoney(Number(budget.limitAmount))}</AppText>)}</Card>
+    <Card><AppText size="title" weight="bold">Metas</AppText><AppText>Ativas: {goals?.summary.activeGoals ?? 0} · concluídas: {goals?.summary.completedGoals ?? 0}</AppText><AppText>Alvo total: {formatMoney(Number(goals?.summary.totalTargetAmount ?? 0))}</AppText><AppText>Atual: {formatMoney(Number(goals?.summary.totalCurrentAmount ?? 0))}</AppText><AppText>Restante: {formatMoney(Number(goals?.summary.totalRemainingAmount ?? 0))}</AppText><AppText mono muted size="caption">Progresso médio: {goals?.summary.averageProgressPercentage ?? '0.00'}%</AppText>{goals?.nextDeadline ? <AppText mono muted size="caption">Próximo prazo: {goals.nextDeadline.name} em {new Date(goals.nextDeadline.targetDate).toLocaleDateString('pt-BR')}</AppText> : null}</Card>
+  </View>;
 }
 
 function PlanningTabButton({
